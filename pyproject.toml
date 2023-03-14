@@ -21,7 +21,7 @@ dependencies = [
 dynamic = ["version"]
 
 [project.scripts]
-grd = "grd:__main__"
+grd = "grd.cli:main"
 
 [tool.pyright]
 reportPrivateImportUsage = "none"
