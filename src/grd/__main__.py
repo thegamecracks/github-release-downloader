@@ -1,18 +1,12 @@
 import logging
 import sys
 
-import httpx
-
-from .client import ReleaseRequester
+from .client import ReleaseRequester, create_client
 
 AUTH = (
     "<USERNAME>",
     "<GITHUB PERSONAL ACCESS TOKEN>",
 )
-BASE = "https://api.github.com"
-HEADERS = {
-    "X-GitHub-Api-Version": "2022-11-28",
-}
 
 OWNER = "<USERNAME>"
 REPO = "<REPOSITORY>"
@@ -22,7 +16,7 @@ logging.basicConfig(
     level=logging.DEBUG,
 )
 
-with httpx.Client(auth=AUTH, base_url=BASE, headers=HEADERS) as client:
+with create_client(AUTH) as client:
     requester = ReleaseRequester(client, OWNER, REPO)
 
     release = requester.get_release()
