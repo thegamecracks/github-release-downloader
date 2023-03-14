@@ -30,8 +30,8 @@ class User(Base, kw_only=True):
     __tablename__ = "user"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    github_username: Mapped[str]
-    github_token: Mapped[str]
+    github_username: Mapped[str | None] = mapped_column(default=None)
+    github_token: Mapped[str | None] = mapped_column(default=None)
 
 
 if __name__ == "__main__":
