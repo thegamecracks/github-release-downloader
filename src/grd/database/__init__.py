@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker
 
 from .cache import ResponseCache
 from .models import Base, Response, User
-from ..appdirs import dirs
+from ..dirs import dirs
 
 
 # Apply various improvements to sqlite3 connections
