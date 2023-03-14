@@ -71,12 +71,10 @@ def download(owner: str, repo: str):
         )
 
         release = requester.get_release(owner, repo)
-        release_id = release.id
-        assets = requester.get_release_assets(owner, repo, release_id)
-        if not assets:
+        if not release.assets:
             sys.exit("no assets available")
 
-        asset = assets[0]
+        asset = release.assets[0]
         with open(asset.name, "xb") as f:
             print(f"Downloading {asset.name}")
             requester.download_asset_to(f, owner, repo, asset.id)

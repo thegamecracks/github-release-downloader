@@ -20,6 +20,7 @@ class Release(BaseModel):
     class Config:
         extras = "allow"
 
+    assets: list[ReleaseAsset]
     id: int
     name: str
 
@@ -31,6 +32,9 @@ class ReleaseAsset(BaseModel):
 
     id: int
     name: str
+
+
+Release.update_forward_refs()
 
 
 class ReleaseClient:
@@ -69,24 +73,6 @@ class ReleaseClient:
             headers=self.JSON_HEADERS,
         )
         return Release(**response)
-
-    def get_release_assets(
-        self,
-        owner: str,
-        repo: str,
-        release_id: int,
-    ) -> list[ReleaseAsset]:
-        """Gets a list of assets for the given release ID.
-
-        The returned result may be cached.
-
-        """
-        response = self._cached_request(
-            "GET",
-            f"/repos/{owner}/{repo}/releases/{release_id}/assets",
-            headers=self.JSON_HEADERS,
-        )
-        return [ReleaseAsset(**x) for x in response]
 
     def download_asset_to(self, file: BinaryIO, owner: str, repo: str, asset_id: int) -> None:
         """Downloads an asset to the given file.
