@@ -11,6 +11,7 @@ requires-python = ">=3.11"
 license = { text = "MIT License" }
 classifiers = []
 dependencies = [
+    "alembic~=1.10",
     "appdirs~=1.4",
     "click~=8.1",
     "httpx~=0.23.3",

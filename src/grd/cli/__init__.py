@@ -19,6 +19,8 @@ CACHE_EXPIRY = datetime.timedelta(days=1)
 )
 @click.pass_context
 def main(ctx: click.Context, verbose: int):
+    from ..database import setup_database
+
     if verbose:
         import logging
 
@@ -26,6 +28,8 @@ def main(ctx: click.Context, verbose: int):
             format="%(levelname)s:%(name)s:%(message)s",
             level=logging.DEBUG,
         )
+
+    setup_database()
 
 
 @main.command()
