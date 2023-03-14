@@ -12,7 +12,9 @@ license = { text = "MIT License" }
 classifiers = []
 dependencies = [
     "appdirs~=1.4",
+    "click~=8.1",
     "httpx~=0.23.3",
+    "InquirerPy~=0.3.4",
     "tqdm~=4.65",
     "SQLAlchemy~=2.0",
 ]
@@ -20,6 +22,9 @@ dynamic = ["version"]
 
 [project.scripts]
 grd = "grd:__main__"
+
+[tool.pyright]
+reportPrivateImportUsage = "none"
 
 [tool.setuptools.dynamic]
 version = { attr = "grd.__version__" }
