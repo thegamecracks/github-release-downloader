@@ -17,7 +17,7 @@ dependencies = [
 dynamic = ["version"]
 
 [project.scripts]
-grd = "grd:main"
+grd = "grd:__main__"
 
 [tool.setuptools.dynamic]
 version = { attr = "grd.__version__" }
