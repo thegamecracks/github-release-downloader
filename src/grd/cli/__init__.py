@@ -1,10 +1,14 @@
 from __future__ import annotations
 
+import datetime
+
 import sys
 
 import click
 
 from .utils import ask_for_auth, get_user
+
+CACHE_EXPIRY = datetime.timedelta(days=1)
 
 
 @click.group()
@@ -51,24 +55,28 @@ def auth(prompt_missing: bool):
 @click.argument("repo")
 def download(owner: str, repo: str):
     """Download the first asset from the latest release in the given repository."""
-    from ..client import ReleaseRequester, create_client
-    from ..database import data_session
+    from ..client import ReleaseClient, create_client
+    from ..database import ResponseCache, data_session
 
     with data_session.begin() as session:
         user = get_user(session)
         auth = ask_for_auth(user)
 
     with create_client(auth) as client:
-        requester = ReleaseRequester(client, owner, repo)
+        cache = ResponseCache(data_session)
+        requester = ReleaseClient(
+            client=client,
+            cache=cache,
+            cache_expiry=CACHE_EXPIRY,
+        )
 
-        release = requester.get_release()
-        release_id = release["id"]
-        assets = requester.get_release_assets(release_id)
+        release = requester.get_release(owner, repo)
+        release_id = release.id
+        assets = requester.get_release_assets(owner, repo, release_id)
         if not assets:
             sys.exit("no assets available")
 
         asset = assets[0]
-        asset_name = asset["name"]
-        with open(asset_name, "xb") as f:
-            print(f"Downloading {asset_name}")
-            requester.download_asset_to(f, asset["id"])
+        with open(asset.name, "xb") as f:
+            print(f"Downloading {asset.name}")
+            requester.download_asset_to(f, owner, repo, asset.id)

@@ -4,6 +4,7 @@ from pathlib import Path
 from sqlalchemy import Connection, Engine, create_engine, event
 from sqlalchemy.orm import sessionmaker
 
+from .cache import ResponseCache
 from .models import Base, Response, User
 from ..appdirs import dirs
 

@@ -9,6 +9,10 @@ A command-line program written in Python for downloading GitHub release assets.
     [X] Username and token
     [ ] Response caching
 
+        [X] Time-based invalidation
+        [ ] Error-based invalidation
+        [ ] Manual invalidation
+
 [ ] Command-line interface
 
     [X] auth - Set or clear authentication
