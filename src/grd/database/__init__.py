@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 import sqlite3
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Connection, Engine, create_engine, event
 from sqlalchemy.orm import sessionmaker
@@ -7,6 +10,9 @@ from sqlalchemy.orm import sessionmaker
 from .cache import ResponseCache
 from .models import Base, Response, User
 from ..dirs import dirs
+
+if TYPE_CHECKING:
+    from alembic.config import Config
 
 
 # Apply various improvements to sqlite3 connections
@@ -24,24 +30,32 @@ def do_begin(conn: Connection):
     conn.exec_driver_sql("BEGIN")
 
 
-def setup_database():
-    import importlib.resources
-
+def _get_alembic_config() -> Config:
     from alembic.config import Config
+
+    # Ideally we'd use importlib.resources, but alembic inherently depends
+    # on the filesystem anyway
+    package = Path(__file__).parent.parent
+
+    cfg = Config(package / "alembic.ini")
+    cfg.set_main_option("script_location", str(package / "alembic"))
+
+    return cfg
+
+
+def setup_database():
     from alembic import command
 
     # Handle database migrations
-    alembic_cfg_resource = importlib.resources.files("grd").joinpath("alembic.ini")
-    with importlib.resources.as_file(alembic_cfg_resource) as path:
-        alembic_cfg = Config(path)
+    config = _get_alembic_config()
 
-        if not data_engine_path.is_file():
-            # Create the database and tell alembic we're on the latest revision
-            data_engine_path.parent.mkdir(parents=True, exist_ok=True)
-            Base.metadata.create_all(data_engine)
-            command.stamp(alembic_cfg, "head")
-        else:
-            command.upgrade(alembic_cfg, "head")
+    if not data_engine_path.is_file():
+        # Create the database and tell alembic we're on the latest revision
+        data_engine_path.parent.mkdir(parents=True, exist_ok=True)
+        Base.metadata.create_all(data_engine)
+        command.stamp(config, "head")
+    else:
+        command.upgrade(config, "head")
 
 
 data_engine_path = Path(f"{dirs.user_data_dir}/data.db")
