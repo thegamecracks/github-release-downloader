@@ -1,13 +1,33 @@
 import datetime
 from typing import Any
 
-from sqlalchemy import JSON
+from sqlalchemy import DateTime, JSON, TypeDecorator
 from sqlalchemy.orm import (
     DeclarativeBase,
     Mapped,
     MappedAsDataclass,
     mapped_column,
 )
+
+
+# https://docs.sqlalchemy.org/en/20/core/custom_types.html#store-timezone-aware-timestamps-as-timezone-naive-utc
+class TZDateTime(TypeDecorator):
+    impl = DateTime
+    cache_ok = True
+
+    def process_bind_param(self, value, dialect):
+        if value is None:
+            return None
+        elif not value.tzinfo:
+            # Interpret as local time
+            value = value.astimezone()
+
+        return value.astimezone(datetime.timezone.utc).replace(tzinfo=None)
+
+    def process_result_value(self, value, dialect):
+        if value is not None:
+            value = value.replace(tzinfo=datetime.timezone.utc)
+        return value
 
 
 class Base(MappedAsDataclass, DeclarativeBase, kw_only=True):
@@ -19,7 +39,10 @@ class Response(Base, kw_only=True):
 
     __tablename__ = "response_cache"
 
-    created_at: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now)
+    created_at: Mapped[datetime.datetime] = mapped_column(
+        TZDateTime,
+        default=datetime.datetime.now,
+    )
     key: Mapped[str] = mapped_column(primary_key=True)
     value: Mapped[Any] = mapped_column(JSON)
 
