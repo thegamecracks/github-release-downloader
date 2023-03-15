@@ -2,13 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Literal, overload
 
-# Expensive imports
 if TYPE_CHECKING:
-    from sqlalchemy.orm import Session
-
     from ..database import User
-
-USER_ID = 1
 
 
 @overload
@@ -49,18 +44,3 @@ def ask_for_auth(user: User, *, only_missing: bool = True) -> tuple:
         user.github_token = token
 
     return user.github_username, user.github_token
-
-
-def get_user(session: Session) -> User:
-    """
-    Gets the user entry from the current session, inserting a default
-    row if it does not already exist.
-    """
-    from ..database import User
-
-    user = session.get(User, USER_ID)
-    if user is None:
-        user = User(id=USER_ID)
-        session.add(user)
-
-    return user

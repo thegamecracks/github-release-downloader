@@ -5,9 +5,7 @@ import sys
 
 import click
 
-from .utils import ask_for_auth, get_user
-
-CACHE_EXPIRY = datetime.timedelta(days=1)
+from .utils import ask_for_auth
 
 
 @click.group()
@@ -35,7 +33,7 @@ def main(ctx: click.Context, verbose: int):
 @main.command()
 def auth():
     """Update GitHub username and token authentication."""
-    from ..database import data_session
+    from ..database import data_session, get_user
 
     with data_session.begin() as session:
         user = get_user(session)
@@ -54,19 +52,15 @@ def auth():
 def download(owner: str, repo: str):
     """Download the first asset from the latest release in the given repository."""
     from ..client import ReleaseClient, create_client
-    from ..database import ResponseCache, data_session
+    from ..database import ResponseCache, data_session, get_user
 
     with data_session.begin() as session:
         user = get_user(session)
         auth = ask_for_auth(user)
+        cache = ResponseCache(data_session, expires_after=user.cache_expiry)
 
     with create_client(auth) as client:
-        cache = ResponseCache(data_session)
-        requester = ReleaseClient(
-            client=client,
-            cache=cache,
-            cache_expiry=CACHE_EXPIRY,
-        )
+        requester = ReleaseClient(client=client, cache=cache)
 
         release = requester.get_release(owner, repo)
         if not release.assets:

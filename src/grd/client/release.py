@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import datetime
 import logging
 from typing import TYPE_CHECKING, Any, BinaryIO
 
@@ -55,11 +54,9 @@ class ReleaseClient:
         *,
         client: httpx.Client,
         cache: ResponseCache,
-        cache_expiry: datetime.timedelta | None = None,
     ):
         self.client = client
         self.cache = cache
-        self.cache_expiry = cache_expiry
 
     def get_release(self, owner: str, repo: str) -> Release:
         """Gets the repository's latest release.
@@ -98,7 +95,7 @@ class ReleaseClient:
 
         """
         key = self._get_cache_key(method, url)
-        data = self.cache.get(key, after=self._expires_after)
+        data = self.cache.get(key)
         cache_hit = data is not None
 
         if not cache_hit:
@@ -120,10 +117,3 @@ class ReleaseClient:
     def _get_cache_key(method: str, url: str) -> str:
         """Creates a cache identifier for the given method and url."""
         return f"{method} {url}"
-
-    @property
-    def _expires_after(self) -> datetime.datetime | None:
-        """Returns the datetime where past cache entries will expire."""
-        if self.cache_expiry is None:
-            return None
-        return datetime.datetime.now() - self.cache_expiry
