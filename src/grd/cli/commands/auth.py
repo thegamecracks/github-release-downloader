@@ -1,15 +1,19 @@
 import click
 
 from .main import main
+from ..state import CLIState, pass_state
 from ..utils import ask_for_auth
 
 __all__ = ("auth",)
 
 
 @main.command()
-def auth():
+@pass_state
+def auth(ctx: CLIState):
     """Update GitHub username and token authentication."""
     from ...database import data_session, get_user
+
+    ctx.setup_database()
 
     with data_session.begin() as session:
         user = get_user(session)

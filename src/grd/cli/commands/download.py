@@ -3,6 +3,7 @@ import sys
 import click
 
 from .main import main
+from ..state import CLIState, pass_state
 from ..utils import ask_for_auth
 
 __all__ = ("download",)
@@ -11,10 +12,13 @@ __all__ = ("download",)
 @main.command()
 @click.argument("owner")
 @click.argument("repo")
-def download(owner: str, repo: str):
+@pass_state
+def download(ctx: CLIState, owner: str, repo: str):
     """Download the first asset from the latest release in the given repository."""
     from ...client import ReleaseClient, create_client
     from ...database import ResponseCache, data_session, get_user
+
+    ctx.setup_database()
 
     with data_session.begin() as session:
         user = get_user(session)

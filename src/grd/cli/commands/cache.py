@@ -6,6 +6,7 @@ import click
 
 from .main import main
 from ..click_types import TimedeltaType
+from ..state import CLIState, pass_state
 
 if TYPE_CHECKING:
     import datetime
@@ -25,7 +26,8 @@ def cache() -> None:
 
 @cache.command(name="clear")
 @click.option("-y", "--yes", help="Skip confirmation prompt", is_flag=True)
-def cache_clear(yes: bool) -> None:
+@pass_state
+def cache_clear(ctx: CLIState, yes: bool) -> None:
     """Manually clear the response cache.
 
     This may be needed if there were release updates for a repository
@@ -43,6 +45,8 @@ def cache_clear(yes: bool) -> None:
 
     from ...database import ResponseCache, data_session, get_user
 
+    ctx.setup_database()
+
     with data_session.begin() as session:
         user = get_user(session)
         cache = ResponseCache(data_session, expires_after=user.cache_expiry)
@@ -52,7 +56,8 @@ def cache_clear(yes: bool) -> None:
 @cache.command(name="expire")
 @click.argument("duration", required=False, type=TimedeltaType())
 @click.option("-u", "--unset", is_flag=True)
-def cache_expire(duration: datetime.timedelta | None, unset: bool):
+@pass_state
+def cache_expire(ctx: CLIState, duration: datetime.timedelta | None, unset: bool):
     """Sets the automatic cache expiration to the given duration.
 
     \b
@@ -64,6 +69,8 @@ def cache_expire(duration: datetime.timedelta | None, unset: bool):
 
     """
     from ...database import data_session, get_user
+
+    ctx.setup_database()
 
     with data_session.begin() as session:
         user = get_user(session)

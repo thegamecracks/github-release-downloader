@@ -15,8 +15,6 @@ __all__ = ("main",)
     help="Increase verbosity of the program.",
 )
 def main(verbose: int):
-    from ...database import setup_database
-
     if verbose:
         import logging
 
@@ -24,5 +22,3 @@ def main(verbose: int):
             format="%(levelname)s:%(name)s:%(message)s",
             level=logging.DEBUG,
         )
-
-    setup_database()
