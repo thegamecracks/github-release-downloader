@@ -100,6 +100,14 @@ def cache_expire(duration: datetime.timedelta | None, unset: bool):
             click.echo("Response cache expiration is turned off")
 
 
+@cache.command(name="where")
+def cache_where() -> None:
+    """Show where the cache database is located."""
+    from ..database import data_engine_path
+
+    click.echo(data_engine_path)
+
+
 @main.command()
 @click.argument("owner")
 @click.argument("repo")
