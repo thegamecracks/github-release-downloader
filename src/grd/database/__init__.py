@@ -14,8 +14,6 @@ from ..dirs import dirs
 if TYPE_CHECKING:
     from alembic.config import Config
 
-USER_ID = 1
-
 
 # Apply various improvements to sqlite3 connections
 # https://docs.sqlalchemy.org/en/20/dialects/sqlite.html#foreign-key-support
@@ -32,16 +30,6 @@ def do_begin(conn: Connection):
     conn.exec_driver_sql("BEGIN")
 
 
-def get_user(session: Session) -> User:
-    """Gets the current user from the session."""
-    user = session.get(User, USER_ID)
-    if user is None:
-        user = User(id=USER_ID)
-        session.add(user)
-
-    return user
-
-
 def _get_alembic_config() -> Config:
     from alembic.config import Config
 
@@ -55,10 +43,9 @@ def _get_alembic_config() -> Config:
     return cfg
 
 
-def setup_database():
+def run_migrations():
     from alembic import command
 
-    # Handle database migrations
     config = _get_alembic_config()
 
     if not engine_path.is_file():
@@ -68,13 +55,6 @@ def setup_database():
         command.stamp(config, "head")
     else:
         command.upgrade(config, "head")
-
-    # Remove any expired responses
-    with sessionmaker.begin() as session:
-        user = get_user(session)
-        cache = ResponseCache(sessionmaker, expires_after=user.cache_expiry)
-
-    cache.clear(expired=True)
 
 
 engine_path = Path(f"{dirs.user_data_dir}/data.db")

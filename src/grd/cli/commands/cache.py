@@ -43,13 +43,8 @@ def cache_clear(ctx: CLIState, yes: bool) -> None:
     ).execute():
         return
 
-    from ...database import ResponseCache, sessionmaker, get_user
-
-    ctx.setup_database()
-
-    with sessionmaker.begin() as session:
-        user = get_user(session)
-        cache = ResponseCache(sessionmaker, expires_after=user.cache_expiry)
+    with ctx.begin() as session:
+        cache = ctx.get_response_cache(session)
         cache.clear(expired=False)
 
 
@@ -68,12 +63,8 @@ def cache_expire(ctx: CLIState, duration: datetime.timedelta | None, unset: bool
                                   # (not recommended)
 
     """
-    from ...database import sessionmaker, get_user
-
-    ctx.setup_database()
-
-    with sessionmaker.begin() as session:
-        user = get_user(session)
+    with ctx.begin() as session:
+        user = ctx.get_user(session)
 
         if unset:
             user.cache_expiry = None
