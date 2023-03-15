@@ -1,5 +1,7 @@
 # github-release-downloader
 
+![A demonstration of the program in bash](/images/demo-2023-03-15.png)
+
 A command-line program written in Python for downloading GitHub release assets.
 
 ## TODO
