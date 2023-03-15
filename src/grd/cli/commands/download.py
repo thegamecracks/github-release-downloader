@@ -1,0 +1,34 @@
+import sys
+
+import click
+
+from .main import main
+from ..utils import ask_for_auth
+
+__all__ = ("download",)
+
+
+@main.command()
+@click.argument("owner")
+@click.argument("repo")
+def download(owner: str, repo: str):
+    """Download the first asset from the latest release in the given repository."""
+    from ...client import ReleaseClient, create_client
+    from ...database import ResponseCache, data_session, get_user
+
+    with data_session.begin() as session:
+        user = get_user(session)
+        auth = ask_for_auth(user)
+        cache = ResponseCache(data_session, expires_after=user.cache_expiry)
+
+    with create_client(auth) as client:
+        requester = ReleaseClient(client=client, cache=cache)
+
+        release = requester.get_release(owner, repo)
+        if not release.assets:
+            sys.exit("no assets available")
+
+        asset = release.assets[0]
+        with open(asset.name, "xb") as f:
+            print(f"Downloading {asset.name}")
+            requester.download_asset_to(f, owner, repo, asset.id)
