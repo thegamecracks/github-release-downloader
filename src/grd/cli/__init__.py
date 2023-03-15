@@ -33,12 +33,7 @@ def main(ctx: click.Context, verbose: int):
 
 
 @main.command()
-@click.option(
-    "--prompt-missing",
-    help="Only prompt for unset options",
-    is_flag=True,
-)
-def auth(prompt_missing: bool):
+def auth():
     """Update GitHub username and token authentication."""
     from ..database import data_session
 
