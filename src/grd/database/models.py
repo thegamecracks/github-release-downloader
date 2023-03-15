@@ -69,11 +69,7 @@ class User(Base, kw_only=True):
 
 
 if __name__ == "__main__":
-    from sqlalchemy import create_mock_engine
-    from sqlalchemy.sql.elements import CompilerElement
+    from sqlalchemy import create_engine
 
-    def dump(sql: CompilerElement, *args, **kwargs):
-        print(sql.compile(dialect=engine.dialect))
-
-    engine = create_mock_engine("sqlite+pysqlite://", dump)  # type: ignore
+    engine = create_engine("sqlite+pysqlite:///:memory:", echo=True)
     Base.metadata.create_all(engine)
