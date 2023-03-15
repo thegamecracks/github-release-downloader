@@ -9,7 +9,11 @@ from .click_types import TimedeltaType
 from .utils import ask_for_auth
 
 
-@click.group()
+@click.group(
+    context_settings={
+        "help_option_names": ["-h", "--help"],
+    },
+)
 @click.option(
     "-v",
     "--verbose",
