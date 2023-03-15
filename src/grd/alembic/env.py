@@ -17,7 +17,7 @@ if "grd" not in sys.modules and config.config_file_name is not None:
 
 # add your model's MetaData object here
 # for 'autogenerate' support
-from grd.database import Base, data_engine
+from grd.database import Base, engine
 target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
@@ -39,7 +39,7 @@ def run_migrations_offline() -> None:
 
     """
     context.configure(
-        url=str(data_engine.url),
+        url=str(engine.url),
         target_metadata=target_metadata,
         compare_type=True,  # Handle column type changes
         literal_binds=True,
@@ -56,7 +56,7 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
-    with data_engine.connect() as conn:
+    with engine.connect() as conn:
         context.configure(connection=conn, target_metadata=target_metadata)
 
         with context.begin_transaction():

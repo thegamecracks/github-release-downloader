@@ -43,13 +43,13 @@ def cache_clear(ctx: CLIState, yes: bool) -> None:
     ).execute():
         return
 
-    from ...database import ResponseCache, data_session, get_user
+    from ...database import ResponseCache, sessionmaker, get_user
 
     ctx.setup_database()
 
-    with data_session.begin() as session:
+    with sessionmaker.begin() as session:
         user = get_user(session)
-        cache = ResponseCache(data_session, expires_after=user.cache_expiry)
+        cache = ResponseCache(sessionmaker, expires_after=user.cache_expiry)
         cache.clear(expired=False)
 
 
@@ -68,11 +68,11 @@ def cache_expire(ctx: CLIState, duration: datetime.timedelta | None, unset: bool
                                   # (not recommended)
 
     """
-    from ...database import data_session, get_user
+    from ...database import sessionmaker, get_user
 
     ctx.setup_database()
 
-    with data_session.begin() as session:
+    with sessionmaker.begin() as session:
         user = get_user(session)
 
         if unset:
@@ -88,6 +88,6 @@ def cache_expire(ctx: CLIState, duration: datetime.timedelta | None, unset: bool
 @cache.command(name="where")
 def cache_where() -> None:
     """Show where the cache database is located."""
-    from ...database import data_engine_path
+    from ...database import engine_path
 
-    click.echo(data_engine_path)
+    click.echo(engine_path)

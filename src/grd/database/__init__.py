@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from sqlalchemy import Connection, Engine, create_engine, event
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import Session, sessionmaker as sa_sessionmaker
 
 from .cache import ResponseCache
 from .models import Base, Response, User
@@ -61,22 +61,22 @@ def setup_database():
     # Handle database migrations
     config = _get_alembic_config()
 
-    if not data_engine_path.is_file():
+    if not engine_path.is_file():
         # Create the database and tell alembic we're on the latest revision
-        data_engine_path.parent.mkdir(parents=True, exist_ok=True)
-        Base.metadata.create_all(data_engine)
+        engine_path.parent.mkdir(parents=True, exist_ok=True)
+        Base.metadata.create_all(engine)
         command.stamp(config, "head")
     else:
         command.upgrade(config, "head")
 
     # Remove any expired responses
-    with data_session.begin() as session:
+    with sessionmaker.begin() as session:
         user = get_user(session)
-        cache = ResponseCache(data_session, expires_after=user.cache_expiry)
+        cache = ResponseCache(sessionmaker, expires_after=user.cache_expiry)
 
     cache.clear(expired=True)
 
 
-data_engine_path = Path(f"{dirs.user_data_dir}/data.db")
-data_engine = create_engine(f"sqlite+pysqlite:///{data_engine_path}")
-data_session = sessionmaker(data_engine)
+engine_path = Path(f"{dirs.user_data_dir}/data.db")
+engine = create_engine(f"sqlite+pysqlite:///{engine_path}")
+sessionmaker = sa_sessionmaker(engine)

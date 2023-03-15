@@ -11,11 +11,11 @@ __all__ = ("auth",)
 @pass_state
 def auth(ctx: CLIState):
     """Update GitHub username and token authentication."""
-    from ...database import data_session, get_user
+    from ...database import sessionmaker, get_user
 
     ctx.setup_database()
 
-    with data_session.begin() as session:
+    with sessionmaker.begin() as session:
         user = get_user(session)
 
         click.echo(
