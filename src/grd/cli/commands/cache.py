@@ -24,13 +24,23 @@ def cache() -> None:
 
 
 @cache.command(name="clear")
-def cache_clear() -> None:
+@click.option("-y", "--yes", help="Skip confirmation prompt", is_flag=True)
+def cache_clear(yes: bool) -> None:
     """Manually clear the response cache.
 
     This may be needed if there were release updates for a repository
     that was recently fetched.
 
     """
+    from InquirerPy import inquirer
+
+    if yes:
+        pass
+    elif not inquirer.confirm(
+        "Are you sure you want to clear the response cache?"
+    ).execute():
+        return
+
     from ...database import ResponseCache, data_session, get_user
 
     with data_session.begin() as session:
