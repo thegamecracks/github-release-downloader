@@ -11,7 +11,7 @@ A command-line program written in Python for downloading GitHub release assets.
 
         - [X] Time-based invalidation
         - [ ] Error-based invalidation
-        - [ ] Manual invalidation
+        - [X] Manual invalidation
 
 - [ ] Command-line interface
 
