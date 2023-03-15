@@ -1,7 +1,7 @@
-"""empty message
+"""Initial revision
 
 Revision ID: eb5168ad3f96
-Revises: 
+Revises:
 Create Date: 2023-03-14 15:09:49.855633
 
 """
