@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from .http import stream_progress
 
 if TYPE_CHECKING:
-    from ..database import ResponseCache
+    from ..database.cache import ResponseCache
 
 log = logging.getLogger(__name__)
 

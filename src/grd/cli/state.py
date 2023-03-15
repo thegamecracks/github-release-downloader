@@ -9,7 +9,8 @@ if TYPE_CHECKING:
 
     from sqlalchemy.orm import Session
 
-    from ..database import ResponseCache, User
+    from ..database.cache import ResponseCache
+    from ..database.models import User
 
 
 class CLIState:
@@ -75,7 +76,7 @@ class CLIState:
         """
         self.setup_database()
 
-        from ..database import sessionmaker
+        from ..database.engine import sessionmaker
 
         return sessionmaker.begin()
 
@@ -94,7 +95,8 @@ class CLIState:
 
         self.setup_database()
 
-        from ..database import sessionmaker
+        from ..database.cache import ResponseCache
+        from ..database.engine import sessionmaker
 
         user = self.get_user(session)
         self._response_cache = ResponseCache(
@@ -105,6 +107,8 @@ class CLIState:
 
     def get_user(self, session: Session) -> User:
         """Gets the current user from the session."""
+        from ..database.models import User
+
         user = session.get(User, self.user_id)
         if user is None:
             user = User(id=self.user_id)
@@ -121,16 +125,16 @@ class CLIState:
         if self.has_setup_database:
             return
 
-        from ..database import run_migrations, sessionmaker
+        from ..database.engine import run_migrations
 
         run_migrations()
 
+        self.has_setup_database = True
+
         # Remove any expired responses
-        with sessionmaker.begin() as session:
+        with self.begin() as session:
             cache = self.get_response_cache(session)
             cache.clear(expired=True)
-
-        self.has_setup_database = True
 
 
 pass_state = click.make_pass_decorator(CLIState, ensure=True)

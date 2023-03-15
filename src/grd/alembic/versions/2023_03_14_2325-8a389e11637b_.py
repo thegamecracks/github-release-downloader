@@ -10,7 +10,7 @@ import datetime
 from alembic import op
 import sqlalchemy as sa
 
-from grd.database import User
+from grd.database.models import User
 
 
 # revision identifiers, used by Alembic.
