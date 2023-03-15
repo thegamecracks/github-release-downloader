@@ -20,8 +20,7 @@ from .utils import ask_for_auth
     count=True,
     help="Increase verbosity of the program.",
 )
-@click.pass_context
-def main(ctx: click.Context, verbose: int):
+def main(verbose: int):
     from ..database import setup_database
 
     if verbose:
