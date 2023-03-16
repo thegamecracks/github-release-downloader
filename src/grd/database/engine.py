@@ -40,10 +40,19 @@ def create_engine(*args, **kwargs) -> Engine:
     return engine
 
 
-class EngineManager:
-    def __init__(self, url: str):
-        self.engine = create_engine(url)
+class SQLiteEngineManager:
+    def __init__(self, path: Path):
+        self.path = path
+        self.engine = create_engine(f"sqlite+pysqlite:///{path}")
         self.sessionmaker = sa_sessionmaker(self.engine)
+
+    def database_exists(self) -> bool:
+        """Checks if the database exists on disk.
+
+        After calling :py:meth:`run_migrations()`, this method should return True.
+
+        """
+        return self.path.is_file()
 
     def run_migrations(self) -> None:
         """Setup the database by running any necessary migrations."""
@@ -51,7 +60,7 @@ class EngineManager:
 
         config = self._get_alembic_config()
 
-        if not engine_path.is_file():
+        if not self.database_exists():
             # Create the database and tell alembic we're on the latest revision
             engine_path.parent.mkdir(parents=True, exist_ok=True)
             Base.metadata.create_all(self.engine)
@@ -73,6 +82,6 @@ class EngineManager:
         return cfg
 
 
-engine_manager = EngineManager(f"sqlite+pysqlite:///{engine_path}")
+engine_manager = SQLiteEngineManager(engine_path)
 engine = engine_manager.engine
 sessionmaker = engine_manager.sessionmaker
