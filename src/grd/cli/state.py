@@ -116,6 +116,20 @@ class CLIState:
 
         return user
 
+    def is_database_encrypted(self) -> bool:
+        """Checks if the database is encrypted.
+
+        If the database file does not exist, this returns False.
+
+        """
+        from ..database.engine import engine_manager, sqlite_encrypter
+
+        if not engine_manager.database_exists():
+            return False
+
+        with sqlite_encrypter.engine.connect() as conn:
+            return sqlite_encrypter.is_encrypted(conn)
+
     def setup_database(self) -> None:
         """Sets up the database for the first time.
 
@@ -124,6 +138,9 @@ class CLIState:
         """
         if self.has_setup_database:
             return
+
+        if self.is_database_encrypted():
+            self._decrypt_database()
 
         from ..database.engine import engine_manager
 
@@ -136,5 +153,20 @@ class CLIState:
             cache = self.get_response_cache(session)
             cache.clear(expired=True)
 
+    def _decrypt_database(self) -> None:
+        from ..database.engine import sqlite_encrypter
+
+        with sqlite_encrypter.engine.connect() as conn:
+            if not sqlite_encrypter.supports_encryption(conn):
+                raise RuntimeError(
+                    "Database may be encrypted, but the underlying SQLite library "
+                    "does not support encryption"
+                )
+
+            from InquirerPy import inquirer
+
+            password = inquirer.secret("Database password:").execute()
+            if not sqlite_encrypter.decrypt_connection(conn, password):
+                raise RuntimeError("Invalid password. Database may be malformed?")
 
 pass_state = click.make_pass_decorator(CLIState, ensure=True)

@@ -13,6 +13,7 @@ from .models import Base
 if TYPE_CHECKING:
     from alembic.config import Config
     from sqlalchemy import Connection, Engine
+    from sqlalchemy.engine.interfaces import DBAPICursor
 
 
 # Listeners to apply various improvements to sqlite3 connections
@@ -23,7 +24,6 @@ def _setup_sqlite_events(engine: Engine) -> None:
     def set_sqlite_pragma(conn: sqlite3.Connection, record):
         conn.isolation_level = None
         conn.execute("PRAGMA foreign_keys = on")
-        conn.execute("PRAGMA journal_mode = wal")
 
     @event.listens_for(engine, "begin")
     def do_begin(conn: Connection):
@@ -38,6 +38,94 @@ def create_engine(*args, **kwargs) -> Engine:
     if engine.dialect.name == "sqlite":
         _setup_sqlite_events(engine)
     return engine
+
+
+class SQLiteEncryptionManager:
+    def __init__(self, engine: Engine, *, password: str | None = None):
+        assert engine.dialect.name == "sqlite"
+        self.engine = engine
+        self.password = password
+        self._setup_decrypt_hook()
+
+    def decrypt_connection(self, conn: Connection, password: str) -> bool:
+        """Decrypts the connection using the given password.
+
+        :returns: True if the database was successfully decrypted, False otherwise.
+
+        """
+        escaped_password = self._escape_string(password)
+        conn.exec_driver_sql(f"PRAGMA key = '{escaped_password}'")
+        return not self.is_encrypted(conn)
+
+    def change_password(self, conn: Connection, new_password: str) -> None:
+        """Changes the database password.
+
+        Note that this method must commit the current transaction in order
+        to change the encryption.
+
+        :raises sqlite3.DatabaseError: Database is encrypted or malformed.
+
+        """
+        escaped_password = self._escape_string(new_password)
+        # FIXME: sqlalchemy gets stuck attempting to reconnect after error
+        c = self._raw_cursor(conn)
+        c.execute("PRAGMA journal_mode = delete")
+        c.execute("COMMIT")
+        c.execute(f"PRAGMA rekey = '{escaped_password}'")
+
+    def is_encrypted(self, conn: Connection) -> bool:
+        """Checks if the database is encrypted.
+
+        The provided connection must come from the engine stored in this class.
+
+        """
+        self._check_same_engine(conn)
+        try:
+            # FIXME: sqlalchemy gets stuck attempting to reconnect after error
+            self._raw_cursor(conn).execute("SELECT * FROM sqlite_schema")
+        except sqlite3.DatabaseError:
+            return True
+        return False
+
+    def supports_encryption(self, conn: Connection) -> bool:
+        """Checks if the connection supports encryption.
+
+        The provided connection must come from the engine stored in this class.
+
+        """
+        self._check_same_engine(conn)
+        with self.engine.connect() as conn:
+            # sqlcipher and SQLiteMultipleCiphers should return an ("ok",) row
+            return conn.exec_driver_sql("PRAGMA key = ''").scalar() is not None
+
+    def _setup_decrypt_hook(self) -> None:
+        event.listen(self.engine, "engine_connect", self._decrypt_hook)
+
+    def _decrypt_hook(self, conn: Connection) -> None:
+        if not self.is_encrypted(conn):
+            # Nothing to do
+            return
+        elif not self.supports_encryption(conn):
+            # Can't decrypt database
+            return
+        elif self.password is None:
+            # Missing password
+            return
+        else:
+            self.decrypt_connection(conn, self.password)
+
+    def _check_same_engine(self, conn: Connection):
+        if conn.engine is not self.engine:
+            raise ValueError("Connection is from a different engine")
+
+    def _raw_cursor(self, conn: Connection) -> DBAPICursor:
+        dbapi_conn = conn.connection.dbapi_connection
+        assert dbapi_conn is not None
+        return dbapi_conn.cursor()
+
+    @staticmethod
+    def _escape_string(s: str) -> str:
+        return s.replace("'", "''")
 
 
 class SQLiteEngineManager:
@@ -83,5 +171,6 @@ class SQLiteEngineManager:
 
 
 engine_manager = SQLiteEngineManager(engine_path)
+sqlite_encrypter = SQLiteEncryptionManager(engine_manager.engine)
 engine = engine_manager.engine
 sessionmaker = engine_manager.sessionmaker
