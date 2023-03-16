@@ -125,9 +125,9 @@ class CLIState:
         if self.has_setup_database:
             return
 
-        from ..database.engine import run_migrations
+        from ..database.engine import engine_manager
 
-        run_migrations()
+        engine_manager.run_migrations()
 
         self.has_setup_database = True
 
