@@ -14,21 +14,6 @@ if TYPE_CHECKING:
     from alembic.config import Config
 
 
-# Apply various improvements to sqlite3 connections
-# https://docs.sqlalchemy.org/en/20/dialects/sqlite.html#foreign-key-support
-# https://docs.sqlalchemy.org/en/20/dialects/sqlite.html#serializable-isolation-savepoints-transactional-ddl
-@event.listens_for(Engine, "connect")
-def set_sqlite_pragma(conn: sqlite3.Connection, record):
-    conn.isolation_level = None
-    conn.execute("PRAGMA foreign_keys = on")
-    conn.execute("PRAGMA journal_mode = wal")
-
-
-@event.listens_for(Engine, "begin")
-def do_begin(conn: Connection):
-    conn.exec_driver_sql("BEGIN")
-
-
 def _get_alembic_config() -> Config:
     from alembic.config import Config
 
@@ -60,3 +45,18 @@ def run_migrations():
 
 engine = create_engine(f"sqlite+pysqlite:///{engine_path}")
 sessionmaker = sa_sessionmaker(engine)
+
+
+# Apply various improvements to sqlite3 connections
+# https://docs.sqlalchemy.org/en/20/dialects/sqlite.html#foreign-key-support
+# https://docs.sqlalchemy.org/en/20/dialects/sqlite.html#serializable-isolation-savepoints-transactional-ddl
+@event.listens_for(engine, "connect")
+def set_sqlite_pragma(conn: sqlite3.Connection, record):
+    conn.isolation_level = None
+    conn.execute("PRAGMA foreign_keys = on")
+    conn.execute("PRAGMA journal_mode = wal")
+
+
+@event.listens_for(engine, "begin")
+def do_begin(conn: Connection):
+    conn.exec_driver_sql("BEGIN")
