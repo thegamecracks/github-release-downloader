@@ -80,14 +80,15 @@ class CLIState:
 
         return sessionmaker.begin()
 
-    def get_response_cache(self, session: Session) -> ResponseCache:
+    def get_response_cache(self, user: User | None = None) -> ResponseCache:
         """Gets a response cache instance.
 
         This method will set up the database if necessary.
 
-        :param session:
-            The session that will be passed to :py:meth:`get_user()`.
-            Once this returns, the session may be closed.
+        :param user:
+            The user whose configuration values will be taken from.
+            If None, a session will be temporarily created to retrieve
+            the current user.
 
         """
         if self._response_cache is not None:
@@ -98,11 +99,18 @@ class CLIState:
         from ..database.cache import ResponseCache
         from ..database.engine import sessionmaker
 
-        user = self.get_user(session)
-        self._response_cache = ResponseCache(
-            sessionmaker,
-            expires_after=user.cache_expiry,
-        )
+        if user is None:
+            with self.begin() as session:
+                user = self.get_user(session)
+                cache_expiry = user.cache_expiry
+        elif user.id == self.user_id:
+            cache_expiry = user.cache_expiry
+        else:
+            raise ValueError(
+                f"Received user with ID {user.id} but expected ID {self.user_id}"
+            )
+
+        self._response_cache = ResponseCache(sessionmaker, expires_after=cache_expiry)
         return self._response_cache
 
     def get_user(self, session: Session) -> User:
@@ -149,9 +157,8 @@ class CLIState:
         self.has_setup_database = True
 
         # Remove any expired responses
-        with self.begin() as session:
-            cache = self.get_response_cache(session)
-            cache.clear(expired=True)
+        cache = self.get_response_cache()
+        cache.clear(expired=True)
 
     def _decrypt_database(self) -> None:
         from ..database.engine import sqlite_encrypter
@@ -168,5 +175,6 @@ class CLIState:
             password = inquirer.secret("Database password:").execute()
             if not sqlite_encrypter.decrypt_connection(conn, password):
                 raise RuntimeError("Invalid password. Database may be malformed?")
+
 
 pass_state = click.make_pass_decorator(CLIState, ensure=True)

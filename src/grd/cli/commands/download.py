@@ -19,7 +19,7 @@ def download(ctx: CLIState, owner: str, repo: str):
     with ctx.begin() as session:
         user = ctx.get_user(session)
         auth = ctx.ask_for_auth(user)
-        cache = ctx.get_response_cache(session)
+        cache = ctx.get_response_cache(user)
 
     with create_client(auth) as client:
         requester = ReleaseClient(client=client, cache=cache)

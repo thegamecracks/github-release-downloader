@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import contextlib
+
 import sqlite3
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Iterator
 
 from sqlalchemy import create_engine as sa_create_engine, event
 from sqlalchemy.orm import sessionmaker as sa_sessionmaker
@@ -54,24 +56,33 @@ class SQLiteEncryptionManager:
 
         """
         escaped_password = self._escape_string(password)
-        conn.exec_driver_sql(f"PRAGMA key = '{escaped_password}'")
+        with self._raw_cursor(conn) as c:
+            c.execute(f"PRAGMA key = '{escaped_password}'")
         return not self.is_encrypted(conn)
 
     def change_password(self, conn: Connection, new_password: str) -> None:
         """Changes the database password.
 
-        Note that this method must commit the current transaction in order
-        to change the encryption.
+        The provided connection *must not* be in a transaction in order
+        for this method to work.
 
         :raises sqlite3.DatabaseError: Database is encrypted or malformed.
 
         """
+        if conn.in_transaction():
+            raise RuntimeError(
+                "Password cannot be changed while a transaction is active"
+            )
+
         escaped_password = self._escape_string(new_password)
-        # FIXME: sqlalchemy gets stuck attempting to reconnect after error
-        c = self._raw_cursor(conn)
-        c.execute("PRAGMA journal_mode = delete")
-        c.execute("COMMIT")
-        c.execute(f"PRAGMA rekey = '{escaped_password}'")
+        is_encrypting = escaped_password != ""
+
+        with self._raw_cursor(conn) as c:
+            if is_encrypting:
+                # Encryption requires a rollback journal
+                c.execute("PRAGMA journal_mode = delete")
+
+            c.execute(f"PRAGMA rekey = '{escaped_password}'")
 
     def is_encrypted(self, conn: Connection) -> bool:
         """Checks if the database is encrypted.
@@ -81,8 +92,8 @@ class SQLiteEncryptionManager:
         """
         self._check_same_engine(conn)
         try:
-            # FIXME: sqlalchemy gets stuck attempting to reconnect after error
-            self._raw_cursor(conn).execute("SELECT * FROM sqlite_schema")
+            with self._raw_cursor(conn) as c:
+                c.execute("SELECT * FROM sqlite_schema")
         except sqlite3.DatabaseError:
             return True
         return False
@@ -90,13 +101,18 @@ class SQLiteEncryptionManager:
     def supports_encryption(self, conn: Connection) -> bool:
         """Checks if the connection supports encryption.
 
+        This method should only be called when the database has not yet been
+        decrypted. If the database was decrypted, this method *will* cause
+        the connection to go back into an encrypted state.
+
         The provided connection must come from the engine stored in this class.
 
         """
         self._check_same_engine(conn)
-        with self.engine.connect() as conn:
-            # sqlcipher and SQLiteMultipleCiphers should return an ("ok",) row
-            return conn.exec_driver_sql("PRAGMA key = ''").scalar() is not None
+        # sqlcipher and SQLiteMultipleCiphers should return an ("ok",) row
+        with self._raw_cursor(conn) as c:
+            c.execute("PRAGMA key = ''")
+            return c.fetchone() is not None
 
     def _setup_decrypt_hook(self) -> None:
         event.listen(self.engine, "engine_connect", self._decrypt_hook)
@@ -118,10 +134,21 @@ class SQLiteEncryptionManager:
         if conn.engine is not self.engine:
             raise ValueError("Connection is from a different engine")
 
-    def _raw_cursor(self, conn: Connection) -> DBAPICursor:
+    @contextlib.contextmanager
+    def _raw_cursor(self, conn: Connection) -> Iterator[DBAPICursor]:
+        """Returns a cursor directly from the DBAPI connection.
+
+        This is useful for avoiding sqlalchemy's autobegin behaviour
+        which cannot be disabled.
+
+        """
         dbapi_conn = conn.connection.dbapi_connection
         assert dbapi_conn is not None
-        return dbapi_conn.cursor()
+        c = dbapi_conn.cursor()
+        try:
+            yield c
+        finally:
+            c.close()
 
     @staticmethod
     def _escape_string(s: str) -> str:

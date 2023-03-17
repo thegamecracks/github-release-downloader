@@ -43,9 +43,8 @@ def cache_clear(ctx: CLIState, yes: bool) -> None:
     ).execute():
         return
 
-    with ctx.begin() as session:
-        cache = ctx.get_response_cache(session)
-        cache.clear(expired=False)
+    cache = ctx.get_response_cache()
+    cache.clear(expired=False)
 
 
 @cache.command(name="expire")
