@@ -87,7 +87,9 @@ class CLIState:
         This method implicitly calls :py:meth:`setup_database()`.
 
         :param user:
-            The user whose configuration values will be taken from.
+            The user to take configuration values from. When providing this,
+            the user ID must be the same as the :py:attr:`user_id` provided
+            during class construction.
             If None, a session will be temporarily created to retrieve
             the current user.
 
