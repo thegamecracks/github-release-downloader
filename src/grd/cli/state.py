@@ -173,13 +173,13 @@ class CLIState:
         with sqlite_encrypter.engine.connect() as conn:
             if not sqlite_encrypter.supports_encryption(conn):
                 sys.exit(
-                    "Database may be encrypted, but the underlying SQLite library "
-                    "does not support encryption."
+                    "Database may be encrypted or malformed. If it is encrypted, "
+                    "the current SQLite library does not support decryption."
                 )
 
             from InquirerPy import inquirer
 
-            password = inquirer.secret("Database password:").execute()
+            password = inquirer.secret("Password to unlock database:").execute()
             if not sqlite_encrypter.decrypt_connection(conn, password):
                 sys.exit("Invalid password. Database may be malformed?")
 
