@@ -72,7 +72,7 @@ def cache_expire(ctx: CLIState, duration: datetime.timedelta | None, unset: bool
         elif user.cache_expiry is not None:
             click.echo(f"Response cache expires after: {user.cache_expiry}")
         else:
-            click.echo("Response cache expiration is turned off")
+            click.echo("Response cache expiration is turned off.")
 
 
 @cache.command(name="where")

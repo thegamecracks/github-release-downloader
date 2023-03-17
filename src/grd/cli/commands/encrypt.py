@@ -31,9 +31,9 @@ def encrypt(ctx: CLIState, mode: Literal["lock", "unlock"] | None):
 
     if mode is None:
         if ctx.is_database_encrypted():
-            click.echo("Database appears to be encrypted")
+            click.echo("Database appears to be encrypted.")
         else:
-            click.echo("Database is not encrypted")
+            click.echo("Database is not encrypted.")
 
     elif mode == "lock":
         if not ctx.supports_encryption():
@@ -49,7 +49,7 @@ def encrypt(ctx: CLIState, mode: Literal["lock", "unlock"] | None):
 
     elif mode == "unlock":
         if not ctx.is_database_encrypted():
-            return click.echo("Database is already unencrypted")
+            return click.echo("Database is already unencrypted.")
 
         ctx.setup_database()
 
@@ -57,4 +57,4 @@ def encrypt(ctx: CLIState, mode: Literal["lock", "unlock"] | None):
             sqlite_encrypter.change_password(conn, "")
 
     else:
-        raise RuntimeError(f"unexpected mode: {mode!r}")
+        raise RuntimeError(f"Unexpected mode: {mode!r}")
