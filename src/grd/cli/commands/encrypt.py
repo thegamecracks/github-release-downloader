@@ -45,10 +45,10 @@ def encrypt(ctx: CLIState, mode: Literal["lock", "unlock"] | None):
             sqlite_encrypter.change_password(conn, password)
 
     elif mode == "unlock":
-        ctx.setup_database()
-
         if not ctx.is_database_encrypted():
             return click.echo("Database is already unencrypted")
+
+        ctx.setup_database()
 
         with sqlite_encrypter.engine.connect() as conn:
             sqlite_encrypter.change_password(conn, "")

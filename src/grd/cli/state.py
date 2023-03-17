@@ -71,7 +71,7 @@ class CLIState:
     def begin(self) -> ContextManager[Session]:
         """Starts an ORM session with the database.
 
-        This method will set up the database if necessary.
+        This method implicitly calls :py:meth:`setup_database()`.
 
         """
         self.setup_database()
@@ -83,7 +83,7 @@ class CLIState:
     def get_response_cache(self, user: User | None = None) -> ResponseCache:
         """Gets a response cache instance.
 
-        This method will set up the database if necessary.
+        This method implicitly calls :py:meth:`setup_database()`.
 
         :param user:
             The user whose configuration values will be taken from.
@@ -128,6 +128,10 @@ class CLIState:
         """Checks if the database is encrypted.
 
         If the database file does not exist, this returns False.
+
+        If the database was decrypted before, this may also return False.
+        As such, this method should not be relied upon after
+        :py:meth:`setup_database()` is called.
 
         """
         from ..database.engine import engine_manager, sqlite_encrypter
