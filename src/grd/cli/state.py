@@ -167,16 +167,29 @@ class CLIState:
         cache = self.get_response_cache()
         cache.clear(expired=True)
 
-    def _decrypt_database(self) -> None:
+    def supports_encryption(self) -> bool:
+        """Checks if the connection supports encryption.
+
+        This method should only be called when the database has not yet been
+        decrypted. If the database was decrypted, this method *will* cause
+        the connection to go back into an encrypted state.
+
+        """
         from ..database.engine import sqlite_encrypter
 
         with sqlite_encrypter.engine.connect() as conn:
-            if not sqlite_encrypter.supports_encryption(conn):
-                sys.exit(
-                    "Database may be encrypted or malformed. If it is encrypted, "
-                    "the current SQLite library does not support decryption."
-                )
+            return sqlite_encrypter.supports_encryption(conn)
 
+    def _decrypt_database(self) -> None:
+        from ..database.engine import sqlite_encrypter
+
+        if not self.supports_encryption():
+            sys.exit(
+                "Database may be encrypted or malformed. If it is encrypted, "
+                "the current SQLite library does not support decryption."
+            )
+
+        with sqlite_encrypter.engine.connect() as conn:
             from InquirerPy import inquirer
 
             password = inquirer.secret("Password to unlock database:").execute()

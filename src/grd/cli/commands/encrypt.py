@@ -36,6 +36,9 @@ def encrypt(ctx: CLIState, mode: Literal["lock", "unlock"] | None):
             click.echo("Database is not encrypted")
 
     elif mode == "lock":
+        if not ctx.supports_encryption():
+            return click.echo("The current SQLite library does not support encryption.")
+
         ctx.setup_database()
 
         from InquirerPy import inquirer
