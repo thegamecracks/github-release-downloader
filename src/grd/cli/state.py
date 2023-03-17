@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sys
 from typing import TYPE_CHECKING, Literal, overload
 
 import click
@@ -169,16 +170,16 @@ class CLIState:
 
         with sqlite_encrypter.engine.connect() as conn:
             if not sqlite_encrypter.supports_encryption(conn):
-                raise RuntimeError(
+                sys.exit(
                     "Database may be encrypted, but the underlying SQLite library "
-                    "does not support encryption"
+                    "does not support encryption."
                 )
 
             from InquirerPy import inquirer
 
             password = inquirer.secret("Database password:").execute()
             if not sqlite_encrypter.decrypt_connection(conn, password):
-                raise RuntimeError("Invalid password. Database may be malformed?")
+                sys.exit("Invalid password. Database may be malformed?")
 
 
 pass_state = click.make_pass_decorator(CLIState, ensure=True)
