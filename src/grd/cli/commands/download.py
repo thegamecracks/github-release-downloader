@@ -10,7 +10,7 @@ from .main import main
 from ..state import CLIState, pass_state
 
 if TYPE_CHECKING:
-    from ...client.release import ReleaseAsset
+    from ...client.models import ReleaseAsset
 
 __all__ = ("download",)
 
@@ -70,8 +70,8 @@ def download(
     will be used.
 
     """
+    from ...client.base import BaseClient
     from ...client.http import create_client
-    from ...client.release import ReleaseClient
 
     with ctx.begin() as session:
         user = ctx.get_user(session)
@@ -79,7 +79,8 @@ def download(
         cache = ctx.get_response_cache(user)
 
     with cache.bucket(), create_client(auth) as client:
-        requester = ReleaseClient(client=client, cache=cache)
+        base = BaseClient(client=client, cache=cache)
+        requester = base.get_release_client()
 
         if tag is not None:
             release = requester.get_release_by_tag(owner, repo, tag)
