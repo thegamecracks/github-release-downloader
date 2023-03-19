@@ -11,9 +11,22 @@ __all__ = ("download",)
 @main.command()
 @click.argument("owner")
 @click.argument("repo")
+@click.option(
+    "-r",
+    "--release",
+    "tag",
+    help="Find a release with the given tag name",
+)
 @pass_state
-def download(ctx: CLIState, owner: str, repo: str):
-    """Download the first asset from the latest release in the given repository."""
+def download(ctx: CLIState, owner: str, repo: str, tag: str | None):
+    """Download the first asset from a release in the given repository.
+
+    The -r/--release option can be used to download assets from a specific
+    release. Note that you must provide the *tag name*, not the title of
+    the release itself. If the option is not specified, the latest release
+    will be used.
+
+    """
     from ...client import ReleaseClient, create_client
 
     with ctx.begin() as session:
@@ -24,7 +37,11 @@ def download(ctx: CLIState, owner: str, repo: str):
     with create_client(auth) as client:
         requester = ReleaseClient(client=client, cache=cache)
 
-        release = requester.get_release(owner, repo)
+        if tag is not None:
+            release = requester.get_release_by_tag(owner, repo, tag)
+        else:
+            release = requester.get_latest_release(owner, repo)
+
         if not release.assets:
             sys.exit("no assets available")
 

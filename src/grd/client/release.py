@@ -58,7 +58,20 @@ class ReleaseClient:
         self.client = client
         self.cache = cache
 
-    def get_release(self, owner: str, repo: str) -> Release:
+    def get_release_by_tag(self, owner: str, repo: str, tag: str) -> Release:
+        """Gets a specific release from the repository by tag.
+
+        The returned result may be cached.
+
+        """
+        response = self._cached_request(
+            "GET",
+            f"/repos/{owner}/{repo}/releases/tags/{tag}",
+            headers=self.JSON_HEADERS,
+        )
+        return Release(**response)
+
+    def get_latest_release(self, owner: str, repo: str) -> Release:
         """Gets the repository's latest release.
 
         The returned result may be cached.
