@@ -1,15 +1,12 @@
 from __future__ import annotations
 
-import logging
-from typing import TYPE_CHECKING, Any, BinaryIO
+from typing import TYPE_CHECKING, BinaryIO
 
 from .http import stream_progress
 from .models import Release
 
 if TYPE_CHECKING:
     from .base import BaseClient
-
-log = logging.getLogger(__name__)
 
 
 class ReleaseClient:

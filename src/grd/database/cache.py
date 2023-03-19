@@ -1,5 +1,6 @@
 import contextlib
 import datetime
+import logging
 from contextvars import ContextVar
 from typing import Any, Callable, Generator, TypeVar
 
@@ -12,6 +13,8 @@ T = TypeVar("T")
 
 _bucket: ContextVar[set[str]] = ContextVar("_current_bucket")
 """Contains a set of keys that have been accessed by the cache in the current context."""
+
+log = logging.getLogger(__name__)
 
 
 class ResponseCache:
@@ -73,6 +76,8 @@ class ResponseCache:
             Otherwise, only deletes entries that have expired.
 
         """
+        log.debug("clearing %s cache entries", "expired" if expired else "all")
+
         expires_at = self._get_expiry_date()
         query = delete(Response)
 
@@ -86,6 +91,8 @@ class ResponseCache:
 
     def discard(self, *keys: str) -> None:
         """Discards a set of keys from the cache."""
+        log.debug("discarding %d cache key(s)", len(keys))
+
         query = delete(Response).where(Response.key.in_(keys))
         with self.sessionmaker.begin() as session:
             session.execute(query)
@@ -97,15 +104,20 @@ class ResponseCache:
         with self.sessionmaker.begin() as session:
             response = session.get(Response, key)
             if response is None:
+                log.debug("cache miss: %s", key)
                 return None
             elif expires_at is not None and response.created_at < expires_at:
+                log.debug("cache key expired: %s", key)
                 return None
 
             self._add_bucket_key(key)
+            log.debug("cache hit: %s", key)
             return response.value
 
     def set(self, key: str, value: Any) -> None:
         """Sets a cached response for the given key."""
+        log.debug("setting cache key: %s", key)
+
         with self.sessionmaker.begin() as session:
             response = Response(
                 created_at=datetime.datetime.now(),

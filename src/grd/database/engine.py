@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import contextlib
-
+import logging
 import sqlite3
 from pathlib import Path
 from typing import TYPE_CHECKING, Iterator
@@ -16,6 +16,8 @@ if TYPE_CHECKING:
     from alembic.config import Config
     from sqlalchemy import Connection, Engine
     from sqlalchemy.engine.interfaces import DBAPICursor
+
+log = logging.getLogger(__name__)
 
 
 # Listeners to apply various improvements to sqlite3 connections
@@ -58,6 +60,8 @@ class SQLiteEncryptionManager:
         :returns: True if the database was successfully decrypted, False otherwise.
 
         """
+        log.debug("attempting to decrypt connection")
+
         escaped_password = self._escape_string(password)
         with self._raw_cursor(conn) as c:
             c.execute(f"PRAGMA key = '{escaped_password}'")
@@ -76,6 +80,8 @@ class SQLiteEncryptionManager:
         :raises sqlite3.DatabaseError: Database is encrypted or malformed.
 
         """
+        log.debug("changing database password")
+
         if conn.in_transaction():
             raise RuntimeError(
                 "Password cannot be changed while a transaction is active"
@@ -186,10 +192,12 @@ class SQLiteEngineManager:
 
         if not self.database_exists():
             # Create the database and tell alembic we're on the latest revision
+            log.debug("creating database")
             engine_path.parent.mkdir(parents=True, exist_ok=True)
             Base.metadata.create_all(self.engine)
             command.stamp(config, "head")
         else:
+            log.debug("running database migrations")
             command.upgrade(config, "head")
 
     @staticmethod

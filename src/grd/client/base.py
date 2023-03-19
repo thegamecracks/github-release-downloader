@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import logging
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
@@ -8,8 +7,6 @@ if TYPE_CHECKING:
 
     from .release import ReleaseClient
     from ..database.cache import ResponseCache
-
-log = logging.getLogger(__name__)
 
 
 class BaseClient:
@@ -47,9 +44,8 @@ class BaseClient:
         """
         key = self._get_cache_key(method, url)
         data = self.cache.get(key)
-        cache_hit = data is not None
 
-        if not cache_hit:
+        if data is None:
             response = self.client.request(method, url, *args, **kwargs)
             response.raise_for_status()
 
@@ -57,11 +53,6 @@ class BaseClient:
             assert data is not None
             self.cache.set(key, data)
 
-        log.debug(
-            "%s (%s)",
-            key,
-            "cache hit" if cache_hit else "cache miss",
-        )
         return data
 
     @staticmethod
