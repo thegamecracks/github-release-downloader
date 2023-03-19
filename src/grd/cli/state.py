@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import sys
-from typing import TYPE_CHECKING, Literal, overload
+import warnings
+from typing import TYPE_CHECKING, Any, Literal, TypeGuard, overload
 
 import click
 
@@ -12,6 +13,15 @@ if TYPE_CHECKING:
 
     from ..database.cache import ResponseCache
     from ..database.models import User
+
+AuthType = tuple[str, str]
+
+
+def _is_valid_auth(auth: tuple[Any, Any]) -> TypeGuard[AuthType]:
+    if len(auth) != 2:
+        return False
+
+    return all(isinstance(x, str) and x for x in auth)  # empty strings count as unset
 
 
 class CLIState:
@@ -35,7 +45,7 @@ class CLIState:
     @overload
     def ask_for_auth(
         self, user: User, *, only_missing: Literal[True] = True
-    ) -> tuple[str, str]:
+    ) -> AuthType:
         ...
 
     def ask_for_auth(self, user: User, *, only_missing: bool = True) -> tuple:
@@ -81,6 +91,34 @@ class CLIState:
 
         return sessionmaker.begin()
 
+    def get_auth(self, user: User | None = None) -> AuthType | None:
+        """Retrieves the current user's API authentication credentials.
+
+        Unlike :py:meth:`ask_for_auth()`, this method will not prompt
+        to fill in credentials and instead displays a warning if
+        insufficient credentials are available.
+
+        """
+        if user is None:
+            with self.begin() as session:
+                user = self.get_user(session)
+                auth = user.github_username, user.github_token
+        else:
+            self._check_user(user)
+            auth = user.github_username, user.github_token
+
+        if _is_valid_auth(auth):
+            return auth
+
+        warnings.warn(
+            "No credentials available for authenticated requests. "
+            "It is recommended to have a Personal Access Token added "
+            "with the `grd auth` command to avoid being ratelimited "
+            "by GitHub.",
+            category=RuntimeWarning,
+        )
+        return None
+
     def get_response_cache(self, user: User | None = None) -> ResponseCache:
         """Gets a response cache instance.
 
@@ -107,12 +145,9 @@ class CLIState:
             with self.begin() as session:
                 user = self.get_user(session)
                 cache_expiry = user.cache_expiry
-        elif user.id == self.user_id:
-            cache_expiry = user.cache_expiry
         else:
-            raise ValueError(
-                f"Received user with ID {user.id} but expected ID {self.user_id}"
-            )
+            self._check_user(user)
+            cache_expiry = user.cache_expiry
 
         self._response_cache = ResponseCache(
             sessionmaker,
@@ -184,6 +219,13 @@ class CLIState:
 
         with sqlite_encrypter.engine.connect() as conn:
             return sqlite_encrypter.supports_encryption(conn)
+
+    def _check_user(self, user: User | None) -> Literal[True]:
+        if user is not None and user.id != self.user_id:
+            raise ValueError(
+                f"Received user with ID {user.id} but expected ID {self.user_id}"
+            )
+        return True
 
     def _decrypt_database(self) -> None:
         from ..database.engine import sqlite_encrypter

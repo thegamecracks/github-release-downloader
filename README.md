@@ -10,15 +10,7 @@ This package requires Python 3.11 to be installed.
 
 ## Usage
 
-1. Generate a [Personal Access Token] for your GitHub account.
-
-   This is used to make authenticated requests, avoiding the [60 requests/hour]
-   rate limit. The token should only be given read permission for whatever
-   repositories you will be downloading from (`repo:public_repo` for classic tokens).
-
-   As of now, this application does not support making unauthenticated requests.
-
-2. Install github-release-downloader.
+1. Install github-release-downloader.
 
    If you have Git installed, you can run the following command:
 
@@ -35,6 +27,14 @@ This package requires Python 3.11 to be installed.
 
    The above commands will install multiple dependencies
    so a [virtual environment] is recommended.
+
+2. (Optional) Create and add a [Personal Access Token] to the program.
+
+   This is used to make authenticated requests, avoiding the [60 requests/hour]
+   rate limit. The token should only be given read permission for whatever
+   repositories you will be downloading from (`repo:public_repo` for classic tokens).
+
+   Once created, use `grd auth` to register your token.
 
 3. Run `grd download <owner> <repo>` to download an asset from that repository,
    or alternatively `python -m grd download <owner> <repo>`.
