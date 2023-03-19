@@ -73,6 +73,8 @@ This package requires Python 3.11 to be installed.
     - [ ] 404 Removed releases/assets
     - [X] Cache invalidation
 
+- [ ] Implement [ETag caching](https://docs.github.com/en/rest/overview/resources-in-the-rest-api#conditional-requests)
+
 ### Wishlist
 
 - [ ] Terminal user interface (perhaps with [textual]?)
