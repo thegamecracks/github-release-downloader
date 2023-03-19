@@ -43,6 +43,6 @@ def main(verbose: int):
         }
 
         logging.basicConfig(
-            format="%(levelname)s:%(name)s:%(message)s",
+            format="%(levelname)s:%(name)s: %(message)s",
             level=levels.get(verbose, logging.DEBUG),
         )
