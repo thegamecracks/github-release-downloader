@@ -9,7 +9,12 @@ __all__ = ("auth",)
 @main.command()
 @pass_state
 def auth(ctx: CLIState):
-    """Update GitHub username and token authentication."""
+    """Update GitHub username and token authentication.
+
+    To get a Personal Access Token, create one at
+    https://github.com/settings/tokens.
+
+    """
 
     with ctx.begin() as session:
         user = ctx.get_user(session)
