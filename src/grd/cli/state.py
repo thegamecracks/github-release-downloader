@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import sys
-import warnings
 from typing import TYPE_CHECKING, Literal
 
 import click
@@ -58,13 +57,6 @@ class CLIState:
         if token is not None and token:
             return token
 
-        warnings.warn(
-            "No credentials available for authenticated requests. "
-            "It is recommended to have a Personal Access Token added "
-            "with the `grd auth` command to avoid being ratelimited "
-            "by GitHub.",
-            category=RuntimeWarning,
-        )
         return None
 
     def get_response_cache(self, user: User | None = None) -> ResponseCache:
