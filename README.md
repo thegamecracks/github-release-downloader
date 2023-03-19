@@ -60,12 +60,12 @@ This package requires Python 3.11 to be installed.
 
 - [ ] Command-line interface
 
-    - [X] auth - Set or clear authentication
-    - [X] download [-r/--release <name>] [-f/--file <name>] <owner> <repo>
+    - [X] `auth` - Set or clear authentication
+    - [X] `download [-r/--release <name>] [-f/--file <name>] <owner> <repo>`
 
         - [ ] Downloading tar/zip archives
 
-    - [ ] list [-r/--release <name>] <owner> <repo>
+    - [ ] `list [-r/--release <name>] <owner> <repo>`
 
 - [ ] Explicit handling of API error status codes
 
