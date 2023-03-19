@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-import datetime
 import logging
 from typing import TYPE_CHECKING, Any, Mapping
+
+from .dates import format_http_date, maybe_parse_http_date
 
 if TYPE_CHECKING:
     import httpx
@@ -12,14 +13,6 @@ if TYPE_CHECKING:
     from ..database.models import Response
 
 log = logging.getLogger(__name__)
-
-header_date_format = "%a, %d %b %Y %H:%M:%S %Z"
-
-
-def _maybe_parse_datetime(s: str | None) -> datetime.datetime | None:
-    if s is not None:
-        dt = datetime.datetime.strptime(s, header_date_format)
-        return dt.replace(tzinfo=datetime.timezone.utc)
 
 
 class BaseClient:
@@ -92,7 +85,7 @@ class BaseClient:
             https://docs.github.com/en/rest/overview/resources-in-the-rest-api#conditional-requests
 
         """
-        date = _maybe_parse_datetime(headers.get("Last-Modified"))
+        date = maybe_parse_http_date(headers.get("Last-Modified"))
         etag = headers.get("ETag")
         self.cache.set(key, value, modified_at=date, etag=etag)
 
@@ -106,10 +99,10 @@ class BaseClient:
             headers["If-None-Match"] = cached.etag
         elif cached.modified_at is not None:
             log.debug("using modified_at date for conditional request")
-            headers["If-Modified-Since"] = cached.modified_at.strftime(header_date_format)
+            headers["If-Modified-Since"] = format_http_date(cached.modified_at)
         else:
             log.debug("using created_at date for conditional request")
-            headers["If-Modified-Since"] = cached.created_at.strftime(header_date_format)
+            headers["If-Modified-Since"] = format_http_date(cached.created_at)
 
     @staticmethod
     def _get_cache_key(method: str, url: str) -> str:
