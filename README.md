@@ -73,8 +73,6 @@ This package requires Python 3.11 to be installed.
     - [ ] 404 Removed releases/assets
     - [X] Cache invalidation
 
-- [ ] Improved logging
-
 ### Wishlist
 
 - [ ] Terminal user interface (perhaps with [textual]?)
