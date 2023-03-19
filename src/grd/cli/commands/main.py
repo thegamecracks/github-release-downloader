@@ -18,7 +18,13 @@ def main(verbose: int):
     if verbose:
         import logging
 
+        levels = {
+            1: logging.WARNING,
+            2: logging.INFO,
+            3: logging.DEBUG,
+        }
+
         logging.basicConfig(
             format="%(levelname)s:%(name)s:%(message)s",
-            level=logging.DEBUG,
+            level=levels.get(verbose, logging.DEBUG),
         )
