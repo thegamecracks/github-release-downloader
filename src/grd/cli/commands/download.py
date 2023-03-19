@@ -70,14 +70,15 @@ def download(
     will be used.
 
     """
-    from ...client import ReleaseClient, create_client
+    from ...client.http import create_client
+    from ...client.release import ReleaseClient
 
     with ctx.begin() as session:
         user = ctx.get_user(session)
         auth = ctx.ask_for_auth(user)
         cache = ctx.get_response_cache(user)
 
-    with create_client(auth) as client:
+    with cache.bucket(), create_client(auth) as client:
         requester = ReleaseClient(client=client, cache=cache)
 
         if tag is not None:

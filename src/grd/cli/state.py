@@ -99,6 +99,7 @@ class CLIState:
 
         self.setup_database()
 
+        from ..client.cache import bucket_predicate
         from ..database.cache import ResponseCache
         from ..database.engine import sessionmaker
 
@@ -113,7 +114,11 @@ class CLIState:
                 f"Received user with ID {user.id} but expected ID {self.user_id}"
             )
 
-        self._response_cache = ResponseCache(sessionmaker, expires_after=cache_expiry)
+        self._response_cache = ResponseCache(
+            sessionmaker,
+            bucket_predicate=bucket_predicate,
+            expires_after=cache_expiry,
+        )
         return self._response_cache
 
     def get_user(self, session: Session) -> User:

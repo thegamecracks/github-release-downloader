@@ -71,7 +71,7 @@ This package requires Python 3.11 to be installed.
 
     - [ ] 429 Ratelimited
     - [ ] 404 Removed releases/assets
-    - [ ] Cache invalidation
+    - [X] Cache invalidation
 
 - [ ] Improved logging
 
