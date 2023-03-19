@@ -58,5 +58,6 @@ class ReleaseClient:
         )
 
         with request as response:
+            response.raise_for_status()
             for data in stream_progress(response):
                 file.write(data)
