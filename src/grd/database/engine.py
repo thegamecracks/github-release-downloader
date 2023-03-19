@@ -52,13 +52,20 @@ class SQLiteEncryptionManager:
     def decrypt_connection(self, conn: Connection, password: str) -> bool:
         """Decrypts the connection using the given password.
 
+        If the connection was successfully decrypted, the password
+        will be cached for subsequent connections.
+
         :returns: True if the database was successfully decrypted, False otherwise.
 
         """
         escaped_password = self._escape_string(password)
         with self._raw_cursor(conn) as c:
             c.execute(f"PRAGMA key = '{escaped_password}'")
-        return not self.is_encrypted(conn)
+
+        success = not self.is_encrypted(conn)
+        if success:
+            self.password = password
+        return success
 
     def change_password(self, conn: Connection, new_password: str) -> None:
         """Changes the database password.
@@ -83,6 +90,8 @@ class SQLiteEncryptionManager:
                 c.execute("PRAGMA journal_mode = delete")
 
             c.execute(f"PRAGMA rekey = '{escaped_password}'")
+
+        self.password = new_password
 
     def is_encrypted(self, conn: Connection) -> bool:
         """Checks if the database is encrypted.
