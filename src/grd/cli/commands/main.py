@@ -15,6 +15,24 @@ __all__ = ("main",)
     help="Increase verbosity of the program.",
 )
 def main(verbose: int):
+    """github-release-downloader
+
+    A user-friendly utility for downloading GitHub release assets.
+
+    \b
+    Examples:
+        # Download an asset from username/repository
+        grd download USERNAME REPOSITORY
+
+    \b
+        # Use maximum logging verbosity
+        grd -vvv download USERNAME REPOSITORY
+
+    \b
+        # Update authentication credentials
+        grd auth
+
+    """
     if verbose:
         import logging
 
