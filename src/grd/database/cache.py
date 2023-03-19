@@ -104,7 +104,7 @@ class ResponseCache:
             self._add_bucket_key(key)
             return response.value
 
-    def set(self, key: str, value: str) -> None:
+    def set(self, key: str, value: Any) -> None:
         """Sets a cached response for the given key."""
         with self.sessionmaker.begin() as session:
             response = Response(
