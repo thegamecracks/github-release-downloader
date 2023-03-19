@@ -4,12 +4,6 @@
 
 A command-line program written in Python for downloading GitHub release assets.
 
-## Limitations
-
-This program is in alpha stage and has a very limited feature set. Right now,
-the `grd download` command will always download the first asset found in the
-latest release of a given repository.
-
 ## Dependencies
 
 This package requires Python 3.11 to be installed.
@@ -67,7 +61,10 @@ This package requires Python 3.11 to be installed.
 - [ ] Command-line interface
 
     - [X] auth - Set or clear authentication
-    - [ ] download [-r/--release <name>] <owner> <repo> <filename>
+    - [X] download [-r/--release <name>] [-f/--file <name>] <owner> <repo>
+
+        - [ ] Downloading tar/zip archives
+
     - [ ] list [-r/--release <name>] <owner> <repo>
 
 - [ ] Explicit handling of API error status codes
