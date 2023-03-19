@@ -8,4 +8,5 @@ def bucket_predicate(exc: Exception) -> bool:
         return False
 
     status = exc.response.status_code
-    return status >= 500 or status == 429
+    # NOTE: GitHub's API actually raises 403 instead of 429
+    return status >= 500 or status in (401, 403, 429)
