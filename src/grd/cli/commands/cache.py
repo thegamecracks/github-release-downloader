@@ -34,17 +34,16 @@ def cache_clear(ctx: CLIState, yes: bool) -> None:
     that was recently fetched.
 
     """
-    from InquirerPy import inquirer
+    def confirm_clear():
+        from InquirerPy import inquirer
 
-    if yes:
-        pass
-    elif not inquirer.confirm(
-        "Are you sure you want to clear the response cache?"
-    ).execute():
-        return
+        message = "Are you sure you want to clear the response cache?"
+        return inquirer.confirm(message).execute()
 
     cache = ctx.get_response_cache()
-    cache.clear(expired=False)
+
+    if yes or confirm_clear():
+        cache.clear(expired=False)
 
 
 @cache.command(name="expire")
