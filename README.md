@@ -73,32 +73,8 @@ This package requires [Python 3.11] or higher to be installed.
 
 ### Todo-list
 
-- [X] Data persistency
-
-    - [X] Username and token
-    - [X] Response caching
-
-        - [X] Time-based invalidation
-        - [X] Manual invalidation
-
-    - [X] Encryption-at-rest support
-
-- [ ] Command-line interface
-
-    - [X] `auth` - Set or clear authentication
-    - [X] `download [-r/--release <name>] [-f/--file <name>] <owner> <repo>`
-
-        - [ ] Downloading tar/zip archives
-
-    - [ ] `list [-r/--release <name>] <owner> <repo>`
-
-- [ ] Explicit handling of API error status codes
-
-    - [ ] 429 Ratelimited
-    - [ ] 404 Removed releases/assets
-    - [X] Cache invalidation
-
-- [X] Implement [ETag caching](https://docs.github.com/en/rest/overview/resources-in-the-rest-api#conditional-requests)
+- [ ] `list <owner> <repo>` - list the available releases for a repository
+- [ ] Allow downloading tar/zip archives
 
 ### Wishlist
 
