@@ -54,8 +54,13 @@ class Response(Base, kw_only=True):
         TZDateTime,
         default=datetime.datetime.now,
     )
+    modified_at: Mapped[datetime.datetime | None] = mapped_column(
+        TZDateTime,
+        default=None,
+    )
     key: Mapped[str] = mapped_column(primary_key=True)
     value: Mapped[Any] = mapped_column(JSON)
+    etag: Mapped[str | None] = mapped_column(default=None)
 
 
 class User(Base, kw_only=True):
@@ -67,9 +72,7 @@ class User(Base, kw_only=True):
 
     github_token: Mapped[str | None] = mapped_column(default=None)
 
-    cache_expiry: Mapped[datetime.timedelta | None] = mapped_column(
-        default=datetime.timedelta(days=1),
-    )
+    cache_expiry: Mapped[datetime.timedelta | None] = mapped_column(default=None)
 
 
 if __name__ == "__main__":

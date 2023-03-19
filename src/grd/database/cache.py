@@ -97,11 +97,14 @@ class ResponseCache:
         with self.sessionmaker.begin() as session:
             session.execute(query)
 
-    def get(self, key: str) -> Any | None:
+    def get(self, key: str) -> Response | None:
         """Looks for a response in the cache."""
         expires_at = self._get_expiry_date()
 
         with self.sessionmaker.begin() as session:
+            # Don't expire the response object when we return it
+            session.expire_on_commit = False
+
             response = session.get(Response, key)
             if response is None:
                 log.debug("cache miss: %s", key)
@@ -112,16 +115,25 @@ class ResponseCache:
 
             self._add_bucket_key(key)
             log.debug("cache hit: %s", key)
-            return response.value
+            return response
 
-    def set(self, key: str, value: Any) -> None:
+    def set(
+        self,
+        key: str,
+        value: Any,
+        *,
+        modified_at: datetime.datetime | None = None,
+        etag: str | None = None,
+    ) -> None:
         """Sets a cached response for the given key."""
         log.debug("setting cache key: %s", key)
 
         with self.sessionmaker.begin() as session:
             response = Response(
                 created_at=datetime.datetime.now(),
+                etag=etag,
                 key=key,
+                modified_at=modified_at,
                 value=value,
             )
             session.merge(response)
