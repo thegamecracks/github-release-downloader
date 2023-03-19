@@ -15,7 +15,7 @@ A command-line program written in Python for downloading GitHub release assets.
         - [ ] Error-based invalidation
         - [X] Manual invalidation
 
-    - [ ] Encryption-at-rest support
+    - [X] Encryption-at-rest support
 
 - [ ] Command-line interface
 
