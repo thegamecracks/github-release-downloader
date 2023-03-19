@@ -7,12 +7,13 @@ BASE = "https://api.github.com"
 HEADERS = {"X-GitHub-Api-Version": "2022-11-28"}
 
 
-def create_client(
-    *,
-    auth: tuple[str, str] | None = None,
-) -> httpx.Client:
+def create_client(*, token: str | None = None) -> httpx.Client:
     """Returns a :py:class:`httpx.Client` prepared for making GitHub requests."""
-    return httpx.Client(auth=auth, base_url=BASE, headers=HEADERS)
+    headers = HEADERS.copy()
+    if token is not None:
+        headers["Authorization"] = f"Bearer {token}"
+
+    return httpx.Client(base_url=BASE, headers=headers)
 
 
 def stream_progress(response: httpx.Response) -> Iterator[bytes]:

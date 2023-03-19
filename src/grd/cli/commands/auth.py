@@ -15,13 +15,12 @@ def auth(ctx: CLIState):
     https://github.com/settings/tokens.
 
     """
-
     with ctx.begin() as session:
         user = ctx.get_user(session)
+        click.echo(f"GitHub Token: {'*****' if user.github_token else '<unset>'}")
 
-        click.echo(
-            f"GitHub Username: {user.github_username or '<unset>'}\n"
-            f"GitHub Token: {'*****' if user.github_token else '<unset>'}"
-        )
+        from InquirerPy import inquirer
 
-        ctx.ask_for_auth(user, only_missing=False)
+        if inquirer.confirm("Do you want to update your token?").execute():
+            token = inquirer.secret("Token:").execute()
+            user.github_token = token

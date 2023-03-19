@@ -65,7 +65,6 @@ class User(Base, kw_only=True):
 
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    github_username: Mapped[str | None] = mapped_column(default=None)
     github_token: Mapped[str | None] = mapped_column(default=None)
 
     cache_expiry: Mapped[datetime.timedelta | None] = mapped_column(

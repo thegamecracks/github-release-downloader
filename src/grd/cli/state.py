@@ -14,15 +14,6 @@ if TYPE_CHECKING:
     from ..database.cache import ResponseCache
     from ..database.models import User
 
-AuthType = tuple[str, str]
-
-
-def _is_valid_auth(auth: tuple[Any, Any]) -> TypeGuard[AuthType]:
-    if len(auth) != 2:
-        return False
-
-    return all(isinstance(x, str) and x for x in auth)  # empty strings count as unset
-
 
 class CLIState:
     def __init__(
@@ -36,49 +27,6 @@ class CLIState:
 
         self._response_cache: ResponseCache | None = None
 
-    @overload
-    def ask_for_auth(
-        self, user: User, *, only_missing: Literal[False]
-    ) -> tuple[str | None, str | None]:
-        ...
-
-    @overload
-    def ask_for_auth(
-        self, user: User, *, only_missing: Literal[True] = True
-    ) -> AuthType:
-        ...
-
-    def ask_for_auth(self, user: User, *, only_missing: bool = True) -> tuple:
-        """Prompts the user for credentials.
-
-        :param user: The user to update credentials for.
-        :param only_missing: If True, only asks for missing credentials.
-
-        """
-        needs_username = only_missing and not user.github_username
-        needs_token = only_missing and not user.github_token
-
-        if only_missing and not needs_username and not needs_token:
-            return user.github_username, user.github_token
-
-        from InquirerPy import inquirer
-
-        if (
-            needs_username
-            or inquirer.confirm("Do you want to update your username?").execute()
-        ):
-            username = inquirer.text("Username:", mandatory=needs_username).execute()
-            user.github_username = username
-
-        if (
-            needs_token
-            or inquirer.confirm("Do you want to update your token?").execute()
-        ):
-            token = inquirer.secret("Token:", mandatory=needs_token).execute()
-            user.github_token = token
-
-        return user.github_username, user.github_token
-
     def begin(self) -> ContextManager[Session]:
         """Starts an ORM session with the database.
 
@@ -91,7 +39,7 @@ class CLIState:
 
         return sessionmaker.begin()
 
-    def get_auth(self, user: User | None = None) -> AuthType | None:
+    def get_auth(self, user: User | None = None) -> str | None:
         """Retrieves the current user's API authentication credentials.
 
         Unlike :py:meth:`ask_for_auth()`, this method will not prompt
@@ -101,14 +49,14 @@ class CLIState:
         """
         if user is None:
             with self.begin() as session:
-                user = self.get_user(session)
-                auth = user.github_username, user.github_token
+                token = self.get_user(session).github_token
         else:
             self._check_user(user)
-            auth = user.github_username, user.github_token
+            token = user.github_token
 
-        if _is_valid_auth(auth):
-            return auth
+        # NOTE: Token might be an empty string
+        if token is not None and token:
+            return token
 
         warnings.warn(
             "No credentials available for authenticated requests. "

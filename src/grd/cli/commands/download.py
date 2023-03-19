@@ -75,10 +75,10 @@ def download(
 
     with ctx.begin() as session:
         user = ctx.get_user(session)
-        auth = ctx.get_auth(user)
+        token = ctx.get_auth(user)
         cache = ctx.get_response_cache(user)
 
-    with cache.bucket(), create_client(auth=auth) as client:
+    with cache.bucket(), create_client(token=token) as client:
         base = BaseClient(client=client, cache=cache)
         requester = base.get_release_client()
 
