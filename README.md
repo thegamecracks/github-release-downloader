@@ -54,10 +54,10 @@ This package requires Python 3.11 to be installed.
 
 ### Todo-list
 
-- [ ] Data persistency
+- [X] Data persistency
 
     - [X] Username and token
-    - [ ] Response caching
+    - [X] Response caching
 
         - [X] Time-based invalidation
         - [X] Manual invalidation
