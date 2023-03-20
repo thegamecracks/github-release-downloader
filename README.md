@@ -38,7 +38,7 @@ for your passphrase.
 
 ## Dependencies
 
-This package requires [Python 3.11] or higher to be installed.
+- [Python 3.11] or higher
 
 [Python 3.11]: https://www.python.org/downloads/
 
@@ -59,8 +59,8 @@ This package requires [Python 3.11] or higher to be installed.
    pip install .
    ```
 
-   The above commands will install multiple dependencies
-   so a [virtual environment] is recommended.
+   Several dependencies are required by this project so installing in
+   a [virtual environment] is recommended.
 
 2. (Optional) Create and add a [Personal Access Token](#authenticated-api-requests).
 
@@ -77,7 +77,7 @@ This package requires [Python 3.11] or higher to be installed.
 - src/
    - alembic/ - Contains the [alembic] database migration scripts.
    - cli/ - Implements the command-line interface with [Click].
-   - client/ - Provides the API client and [Pydantic] models for interact with GitHub.
+   - client/ - Provides the API client and [Pydantic] models to interact with GitHub.
    - database/ - Defines the [SQLAlchemy] models and connections to the SQLite database.
 
 [alembic]: https://alembic.sqlalchemy.org/
@@ -87,7 +87,7 @@ This package requires [Python 3.11] or higher to be installed.
 
 ### Todo-list
 
-- [ ] `list <owner> <repo>` - list the available releases for a repository
+- [ ] `list <owner> <repo>` - list available releases for a repository
 - [ ] Allow downloading tar/zip archives
 
 ### Wishlist
