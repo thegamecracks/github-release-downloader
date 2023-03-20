@@ -16,11 +16,7 @@ class ReleaseClient:
         self.base = base
 
     def get_release_by_tag(self, owner: str, repo: str, tag: str) -> Release:
-        """Gets a specific release from the repository by tag.
-
-        The returned result may be cached.
-
-        """
+        """Gets a specific release from the repository by tag."""
         response = self.base.cached_request(
             "GET",
             f"/repos/{owner}/{repo}/releases/tags/{tag}",
@@ -29,11 +25,7 @@ class ReleaseClient:
         return Release(**response)
 
     def get_latest_release(self, owner: str, repo: str) -> Release:
-        """Gets the repository's latest release.
-
-        The returned result may be cached.
-
-        """
+        """Gets the repository's latest release."""
         response = self.base.cached_request(
             "GET",
             f"/repos/{owner}/{repo}/releases/latest",
