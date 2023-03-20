@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 import click
 
 from .main import main
+from ..errors import wrap_httpx_errors
 from ..state import CLIState, pass_state
 
 if TYPE_CHECKING:
@@ -55,6 +56,7 @@ def _select_asset(assets: list[ReleaseAsset]) -> ReleaseAsset:
     help="Immediately download the given filename",
 )
 @pass_state
+@wrap_httpx_errors
 def download(
     ctx: CLIState,
     owner: str,
