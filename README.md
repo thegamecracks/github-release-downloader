@@ -72,6 +72,19 @@ This package requires [Python 3.11] or higher to be installed.
 
 ## Development
 
+### Project Structure
+
+- src/
+   - alembic/ - Contains the [alembic] database migration scripts.
+   - cli/ - Implements the command-line interface with [Click].
+   - client/ - Provides the API client and [Pydantic] models for interact with GitHub.
+   - database/ - Defines the [SQLAlchemy] models and connections to the SQLite database.
+
+[alembic]: https://alembic.sqlalchemy.org/
+[Click]: click.palletsprojects.com/
+[Pydantic]: https://docs.pydantic.dev/
+[SQLAlchemy]: https://docs.sqlalchemy.org/en/20/
+
 ### Todo-list
 
 - [ ] `list <owner> <repo>` - list the available releases for a repository
