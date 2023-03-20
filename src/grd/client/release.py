@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, BinaryIO
+from typing import TYPE_CHECKING
 
-from .http import stream_progress
 from .models import Release
+from .protocols import ResponseStreamable, Streamable
 
 if TYPE_CHECKING:
     from .base import BaseClient
@@ -41,20 +41,12 @@ class ReleaseClient:
         )
         return Release(**response)
 
-    def download_asset_to(self, file: BinaryIO, owner: str, repo: str, asset_id: int) -> None:
-        """Downloads an asset to the given file.
-
-        Unlike the other methods, this will always make an HTTP request.
-
-        """
+    def stream_asset(self, owner: str, repo: str, asset_id: int) -> Streamable:
+        """Returns a stream of bytes for the given asset."""
         request = self.base.client.stream(
             "GET",
             f"/repos/{owner}/{repo}/releases/assets/{asset_id}",
             follow_redirects=True,
             headers={"Accept": "application/octet-stream"},
         )
-
-        with request as response:
-            response.raise_for_status()
-            for data in stream_progress(response):
-                file.write(data)
+        return ResponseStreamable(request)

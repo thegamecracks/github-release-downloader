@@ -9,6 +9,7 @@ import click
 from .main import main
 from ..errors import wrap_httpx_errors
 from ..state import CLIState, pass_state
+from ..streams import stream_progress
 
 if TYPE_CHECKING:
     from ...client.models import ReleaseAsset
@@ -96,5 +97,9 @@ def download(
         else:
             asset = _select_asset(release.assets)
 
-        with open(asset.name, "xb") as f:
-            requester.download_asset_to(f, owner, repo, asset.id)
+        with (
+            open(asset.name, "xb") as f,
+            requester.stream_asset(owner, repo, asset.id) as stream,
+        ):
+            for data in stream_progress(stream):
+                f.write(data)
