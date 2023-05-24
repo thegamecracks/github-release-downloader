@@ -60,7 +60,14 @@ for your passphrase.
    ```
 
    Several dependencies are required by this project so installing in
-   a [virtual environment] is recommended.
+   a [virtual environment] is recommended. If you prefer to not handle
+   the virtual environment yourself, installing this through [pipx] is
+   a good alternative:
+
+   ```sh
+   pip install pipx  # see their proper installation instructions on PyPI
+   pipx install git+https://github.com/thegamecracks/github-release-downloader
+   ```
 
 2. (Optional) Create and add a [Personal Access Token](#authenticated-api-requests).
 
@@ -69,6 +76,7 @@ for your passphrase.
 
 [as a zip]: https://github.com/thegamecracks/github-release-downloader/archive/refs/heads/main.zip
 [virtual environment]: https://docs.python.org/3/library/venv.html
+[pipx]: https://pypi.org/project/pipx/
 
 ## Development
 
