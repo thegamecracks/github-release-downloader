@@ -10,9 +10,9 @@ A command-line program written in Python for downloading GitHub release assets.
 
 A [Personal Access Token] can be provided to the program using the `grd auth`
 command. This allows for making authenticated API requests, which are not
-limited to the usual [60 requests/hour] rate limit. The token should only be
-given read permission for whatever repositories you will be downloading from
-(classic tokens should receive `repo:public_repo`).
+limited to the usual [60 requests/hour] rate limit. This application only
+requires read permission for whatever repositories you will be downloading
+from (for classic tokens, they should have the `repo:public_repo` permission).
 
 [Personal Access Token]: https://github.com/settings/tokens
 [60 requests/hour]: https://docs.github.com/en/rest/overview/resources-in-the-rest-api#rate-limiting
