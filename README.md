@@ -81,7 +81,7 @@ for your passphrase.
    - database/ - Defines the [SQLAlchemy] models and connections to the SQLite database.
 
 [alembic]: https://alembic.sqlalchemy.org/
-[Click]: click.palletsprojects.com/
+[Click]: https://click.palletsprojects.com/
 [Pydantic]: https://docs.pydantic.dev/
 [SQLAlchemy]: https://docs.sqlalchemy.org/en/20/
 
