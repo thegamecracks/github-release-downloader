@@ -12,7 +12,7 @@ def format_http_date(dt: datetime.datetime) -> str:
 
     """
     s = dt.astimezone(datetime.timezone.utc).strftime(http_date_format)
-    return s[:s.rindex("UTC")] + "GMT"
+    return s[: s.rindex("UTC")] + "GMT"
 
 
 @overload

@@ -19,6 +19,7 @@ if "grd" not in sys.modules and config.config_file_name is not None:
 # for 'autogenerate' support
 from grd.database.engine import engine
 from grd.database.models import Base
+
 target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,

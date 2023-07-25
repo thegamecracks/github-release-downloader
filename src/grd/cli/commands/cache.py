@@ -34,6 +34,7 @@ def cache_clear(ctx: CLIState, yes: bool) -> None:
     that was recently fetched.
 
     """
+
     def confirm_clear():
         from InquirerPy import inquirer
 

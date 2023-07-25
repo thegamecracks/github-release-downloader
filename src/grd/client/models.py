@@ -5,6 +5,7 @@ from pydantic import BaseModel
 
 class Release(BaseModel):
     """Represents a release for a repository."""
+
     class Config:
         extras = "allow"
 
@@ -15,6 +16,7 @@ class Release(BaseModel):
 
 class ReleaseAsset(BaseModel):
     """An asset for a given release."""
+
     class Config:
         extras = "allow"
 
