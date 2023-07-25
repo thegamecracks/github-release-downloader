@@ -4,6 +4,13 @@
 
 A command-line program written in Python for downloading GitHub release assets.
 
+## Notice
+
+[github-release-downloader on PyPI](https://pypi.org/project/github-release-downloader/)
+is a completely distinct project authored by MaxBQb.
+Check out [their repository](https://github.com/MBQbUtils/GithubReleaseDownloader)
+if you are interested in a library+CLI for the same purpose!
+
 ## Features
 
 ### Authenticated API requests
