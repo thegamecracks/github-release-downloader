@@ -1,0 +1,25 @@
+name: Lint with pyright
+
+on:
+  push:
+    paths:
+      - '**.py'
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3.5.3
+    - name: Set up Python
+      uses: actions/setup-python@v4.5.0
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    - name: Install pyright
+      run: pip install pyright
+    - name: Install repository
+      run: pip install .
+    - name: Run pyright
+      run: pyright
