@@ -22,4 +22,4 @@ class ReleaseAsset(BaseModel):
     name: str
 
 
-Release.update_forward_refs()
+Release.model_rebuild()
